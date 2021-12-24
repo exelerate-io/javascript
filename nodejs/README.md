@@ -1,4 +1,4 @@
-[✔]: assets/images/checkbox-small-blue.png
+[✔]: assets/checkbox-small-blue.png
 
 # Exelerate - NodeJS
 
