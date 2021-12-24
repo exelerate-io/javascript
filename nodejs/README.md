@@ -179,7 +179,7 @@
 
 **TL;DR:** The worst large applications pitfall is maintaining a huge code base with hundreds of dependencies - such a monolith slows down developers as they try to incorporate new features. Instead, partition your code into components, each gets its folder or a dedicated codebase, and ensure that each unit is kept small and simple. Visit 'Read More' below to see examples of correct project structure
 
-<img src="assets/structure.png" alt="Project structure"/>
+<img src="../assets/structure.png" alt="Project structure"/>
 
 <br/><br/>
 
