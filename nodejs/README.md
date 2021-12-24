@@ -1,5 +1,3 @@
-[✔]: assets/checkbox-small-blue.png
-
 # Exelerate - NodeJS
 
 ## Table of Contents
@@ -8,10 +6,6 @@
   <summary>
     <a href="#1-project-structure-practices">1. Project Structure Practices (5)</a>
   </summary>
-
-&emsp;&emsp;[1.1 Structure your solution by components `#strategic`](#-11-structure-your-solution-by-components)</br>
-&emsp;&emsp;[1.3 Wrap common utilities as npm packages](#-13-wrap-common-utilities-as-npm-packages)</br>
-&emsp;&emsp;[1.5 Use environment aware, secure and hierarchical config `#modified-recently`](#-15-use-environment-aware-secure-and-hierarchical-config)</br>
 
 </details>
 
