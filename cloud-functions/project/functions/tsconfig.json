@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "rootDirs": ["src"],
+    "outDir": "lib",
+    "sourceMap": true,
+    "strict": false,
+    "target": "es2017",
+    "esModuleInterop": true,
+    "types": ["jest"]
+  },
+  "compileOnSave": true,
+  "include": ["src"],
+  "exclude": ["src/__tests__"]
+}

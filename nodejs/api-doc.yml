@@ -1,0 +1,1286 @@
+openapi: 3.0.0
+info:
+  version: "1.0"
+  title: Klikni Jadi
+  description: ""
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/shapkar/klikni-jadi/1.0
+tags:
+  - name: monitoring
+    description: Monitoring
+  - name: restaurants
+    description: Operations about restaurants
+  - name: customers
+    description: Operations about customers
+  - name: carts
+    description: Operations about carts
+  - name: payments
+    description: Operations about payments
+  - name: orders
+    description: Operations about orders
+  - name: jobs
+    description: Operations about jobs
+
+paths:
+  /api/v1/health:
+    get:
+      tags:
+        - monitoring
+      summary: Returns status health
+      operationId: checkHealth
+      responses:
+        "200":
+          description: Ok
+        "400":
+          description: Invalid token.
+        "401":
+          description: Access denied. No token provided.
+
+  /api/v1/restaurants:
+    get:
+      tags:
+        - restaurants
+      summary: Returns restaurants based on the query string
+      operationId: getRestaurants
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchResponse"
+        "400":
+          description: Invalid token.
+        "401":
+          description: Access denied. No token provided.
+      parameters:
+        - name: x-access-token
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: type
+          in: query
+          description: The service that a restaurant provides
+          required: false
+          schema:
+            type: string
+            items:
+              enum:
+                - delivery
+                - booking
+                - takeout
+              default: delivery
+        - name: page
+          in: query
+          description: Page number, need for the infinite scroll
+          required: false
+          schema:
+            type: number
+        - name: q
+          in: query
+          description: Search keyword
+          required: false
+          schema:
+            type: string
+        - name: occupationId
+          in: query
+          description: An id of an occupation
+          required: false
+          schema:
+            type: string
+            items:
+              enum:
+                - H5j7T0C7894o5URtd4We (Restaurant)
+                - pq4L2oapPpgWfPHCbBB9 (Lounge Bar)
+                - dLCMfY9nkuoDsbte1vOG (Cocktail Bar)
+                - DvpIbS2JCvNSzWwk32BJ (Burger)
+                - Snbvuc0hai5WMNWZSfUe (Fine Dine)
+                - OUBT20o1DpChBS2eFaPk (Wine and Dine)
+                - VdtGa0bzEV49v2r7OUEi (Pub)
+        - name: cuisineId
+          in: query
+          description: An id of an occupation
+          required: false
+          schema:
+            type: string
+            items:
+              enum:
+                - tWXWMwhMEjMNQftqyYlg (Macedonian)
+                - tMKRDwh9XLsnSC8Viysl (Mexican)
+                - dhVg4rMQ7lUi5UK32gZo (Chinese)
+                - PLOlo59hKidgwihb1GXJ (American)
+                - gWJaSNXD9ZtumpN7wJog (Vegetarian)
+                - mSVWkcoZZHD7TGVNTKaY (Turkish)
+                - psJhAYoCd45KDa1CxQH7 (Vegan)
+                - 1CLi8NrxDRV749AO6a6p (Healthy)
+                - focLCUTN2a8ypUrszVRj (Italian)
+                - f3TP3k4JcSJw6iM2NPzr (Greek)
+                - pDWAAAhAejDMSsA1Ack2 (Bosnian)
+                - o6fm6GlsI9L1cgTBmMZK (Asian)
+        - name: amenityIds
+          in: query
+          description: Comma separated ids of amenities
+          required: false
+          schema:
+            type: string
+            items:
+              enum:
+                - SpCetVx5yYDFBKuH1Jzx (Pet-Friendly)
+                - 3oJaIePQbm9EZjGcPUMU (Wi-Fi)
+                - 5UUkXFIpS6keQ0Bxh0la (Parking)
+
+  /api/v1/restaurants/promoted:
+    get:
+      tags:
+        - restaurants
+      summary: Returns sponsored restaurants
+      operationId: getPromotedRestaurants
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Restaurant"
+        "400":
+          description: Invalid token.
+        "401":
+          description: Access denied. No token provided.
+
+  /api/v1/restaurants/{restaurantId}/availableHours:
+    get:
+      tags:
+        - restaurants
+      summary: Returns available work hours of the restaurant within the next 6 days from now (need for preorders)
+      operationId: getRestaurantAvailableHours
+      parameters:
+        - name: restaurantId
+          in: path
+          description: ID of restaurant to get available work hours
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AvailableHours"
+        "400":
+          description: Invalid token.
+        "401":
+          description: Access denied. No token provided.
+
+  /api/v1/restaurants/recommend:
+    post:
+      tags:
+        - restaurants
+      summary: Sends an email with the recommended restaurant
+      operationId: recommendRestaurant
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                recommendation:
+                  type: string
+        required: true
+      responses:
+        "200":
+          description: Ok
+        "400":
+          description: Invalid token.
+        "401":
+          description: Access denied. No token provided.
+
+  /api/v1/payments/success:
+    post:
+      tags:
+        - payments
+      summary: Handles succeeded payment and returns the user back to history of orders
+      operationId: handleSucceededPayment
+      responses:
+        "302":
+          description: The payment has succeeded and the user is redirected to the order history section
+          headers:
+            Location:
+              description: https://kliknijadi-beta.mk/profile/orders?onlinePayment=successful&orderPrice=${orderAmount}
+              schema:
+                type: string
+                format: uri
+
+  /api/v1/payments/fail:
+    post:
+      tags:
+        - payments
+      summary: Handles failed payment and returns the user back to the cart page
+      operationId: handleFailedPayment
+      responses:
+        "302":
+          description: The payment has failed and the user is redirected to the cart page
+          headers:
+            Location:
+              description: https://kliknijadi-beta.mk/cart?onlinePayment=unsuccessful
+              schema:
+                type: string
+                format: uri
+
+  /api/v1/orders/{orderId}:
+    patch:
+      tags:
+        - orders
+      summary: Updates the order
+      operationId: updateOrder
+      parameters:
+        - name: orderId
+          in: path
+          description: ID of order to be updated
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Order"
+        required: true
+      responses:
+        "204":
+          description: successful operation
+        "400":
+          description: Invalid token.
+        "401":
+          description: Access denied. No token provided.
+        "403":
+          description: Forbidden. Not Authorized.
+        "500":
+          description: Internal
+
+  /api/v1/jobs:
+    post:
+      tags:
+        - jobs
+      summary: Sends an email with the job applicant
+      operationId: handleApplyForJob
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Job"
+        required: true
+      responses:
+        "200":
+          description: Ok
+        "400":
+          description: Invalid token.
+        "401":
+          description: Access denied. No token provided.
+
+  /api/v1/customers/findByPhone:
+    post:
+      tags:
+        - customers
+      summary: Returns the id of the found customer
+      operationId: findCustomerByPhone
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phoneNumber:
+                  type: string
+        required: true
+      responses:
+        "200":
+          description: successfull operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+        "400":
+          description: Invalid token.
+        "401":
+          description: Access denied. No token provided.
+
+  /api/v1/customers/{customerId}/claims:
+    post:
+      tags:
+        - customers
+      summary: Sets claims to the customer
+      operationId: setClaims
+      parameters:
+        - name: customerId
+          in: path
+          description: ID of customer
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cartId:
+                  type: string
+        required: true
+      responses:
+        "200":
+          description: successfull operation
+        "400":
+          description: Invalid token.
+        "401":
+          description: Access denied. No token provided.
+
+  /api/v1/carts:
+    post:
+      tags:
+        - carts
+      summary: Creates cart and returns the id
+      operationId: createCart
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string # OrderType
+        required: true
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: string
+        "400":
+          description: Invalid token.
+        "401":
+          description: Access denied. No token provided.
+
+  /api/v1/carts/{cartId}:
+    delete:
+      tags:
+        - carts
+      summary: Deletes the cart
+      operationId: deleteCart
+      parameters:
+        - name: cartId
+          in: path
+          description: ID of cart to be deleted
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Ok
+        "400":
+          description: Invalid token.
+        "401":
+          description: Access denied. No token provided.
+    patch:
+      tags:
+        - carts
+      summary: Updates the cart
+      operationId: updateCart
+      parameters:
+        - name: cartId
+          in: path
+          description: ID of cart to be updated
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                update:
+                  type: string # "items" | "address" | "priority" | "tip" | "customerWallet" | "coupon" | "preorder" | "roundup" | "orderType"
+                data:
+                  $ref: "#/components/schemas/Cart"
+      responses:
+        "204":
+          description: Ok.
+        "400":
+          description: Invalid token.
+        "401":
+          description: Access denied. No token provided.
+
+  /api/v1/carts/{cartId}/migrate:
+    post:
+      tags:
+        - carts
+      summary: Migrates the cart to the users cart once the user is logged in
+      operationId: migrateCart
+      parameters:
+        - name: cartId
+          in: path
+          description: ID of cart to be migrated
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                toCartId:
+                  type: string
+      responses:
+        "200":
+          description: Ok
+        "400":
+          description: Invalid token.
+        "401":
+          description: Access denied. No token provided.
+
+components:
+  securitySchemes:
+    petstore_auth:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: "http://petstore.swagger.io/oauth/dialog"
+          scopes:
+            "write:pets": modify pets in your account
+            "read:pets": read your pets
+    api_key:
+      type: apiKey
+      name: api_key
+      in: header
+
+  schemas:
+    Job:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        phoneNumber:
+          type: string
+        role:
+          type: string
+        message:
+          type: string
+
+    Driver:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        phoneNumber:
+          type: string
+
+    AvailableHours:
+      type: object
+      properties:
+        0:
+          type: object
+          properties:
+            date:
+              type: string
+            hours:
+              type: array
+              items:
+                type: string
+
+    SearchResponse:
+      type: object
+      properties:
+        results:
+          type: object
+          properties:
+            matchByName:
+              type: array
+              items:
+                $ref: "#/components/schemas/Restaurant"
+            matchByTags:
+              type: array
+              items:
+                $ref: "#/components/schemas/Restaurant"
+            closed:
+              type: array
+              items:
+                $ref: "#/components/schemas/Restaurant"
+            noMatches:
+              type: array
+              items:
+                $ref: "#/components/schemas/Restaurant"
+            byFilter:
+              type: array
+              items:
+                $ref: "#/components/schemas/Restaurant"
+            lastPage:
+              type: boolean
+        metadata:
+          type: object
+          properties:
+            aggregations:
+              type: object
+              properties:
+                occupations:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      count:
+                        type: number
+                cuisines:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      count:
+                        type: number
+                amenities:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      count:
+                        type: number
+
+    Restaurant:
+      type: object
+      required:
+        - id
+        - name
+        - createdAt
+        - occupationIds
+        - cuisineIds
+        - amenityIds
+        - status
+      properties:
+        id:
+          type: string
+        name:
+          $ref: "#/components/schemas/LocaleStrings"
+        subtitle:
+          $ref: "#/components/schemas/LocaleStrings"
+        description:
+          $ref: "#/components/schemas/LocaleStrings"
+        createdAt:
+          $ref: "#/components/schemas/Timestamp"
+        occupationIds:
+          $ref: "#/components/schemas/RestaurantFilter"
+        cuisinedIds:
+          $ref: "#/components/schemas/RestaurantFilter"
+        amenityIds:
+          type: array
+          items:
+            type: string
+        minOrderAmount:
+          type: number
+        images:
+          type: object
+          properties:
+            logoRef:
+              type: string
+            coverRef:
+              type: string
+            thumbnailRef:
+              type: string
+            logoUrl:
+              type: string
+            coverUrl:
+              type: string
+            thumbnailUrl:
+              type: string
+        videos:
+          type: object
+          properties:
+            coverRef:
+              type: string
+            coverUrl:
+              type: string
+        status:
+          type: object
+          properties:
+            isActive:
+              type: boolean
+            isNew:
+              type: boolean
+            isOpenForBooking:
+              type: boolean
+            isOpenForDelivery:
+              type: boolean
+        address:
+          $ref: "#/components/schemas/RestaurantAddress"
+        workingHours:
+          $ref: "#/components/schemas/WorkingHours"
+        timesOff:
+          $ref: "#/components/schemas/TimesOff"
+        avgRating:
+          type: number
+        attributes:
+          type: object
+          properties:
+            hasInhouse:
+              type: boolean
+            hasTableBooking:
+              type: boolean
+            hasDelivery:
+              type: boolean
+            hasSelfPickup:
+              type: boolean
+            hasEmailForRating:
+              type: boolean
+            deliveryBy:
+              type: string
+        sections:
+          type: object
+          properties:
+            isSponsored:
+              type: boolean
+            isPopular:
+              type: boolean
+        priorityNumber:
+          type: number
+        reviews:
+          $ref: "#/components/schemas/RestaurantReviewAgg"
+        gallery:
+          type: array
+          items:
+            $ref: "#/components/schemas/FileImage"
+        phones:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              phoneNumber:
+                type: string
+        activeFoodMenuId:
+          type: string
+
+    FileImage:
+      type: object
+      properties:
+        fileRef:
+          type: string
+        url:
+          type: string
+
+    RestaurantReviewAgg:
+      type: object
+      properties:
+        delicious:
+          type: object
+          properties:
+            yes:
+              type: number
+            no:
+              type: number
+        cheap:
+          type: object
+          properties:
+            yes:
+              type: number
+            no:
+              type: number
+        largePortions:
+          type: object
+          properties:
+            yes:
+              type: number
+            no:
+              type: number
+        authenticity:
+          type: object
+          properties:
+            yes:
+              type: number
+            no:
+              type: number
+        orderAgain:
+          type: object
+          properties:
+            yes:
+              type: number
+            no:
+              type: number
+        comment:
+          type: string
+
+    TimesOff:
+      type: object
+      properties:
+        id:
+          type: string
+        startDate:
+          $ref: "#/components/schemas/Timestamp"
+        endDate:
+          $ref: "#/components/schemas/Timestamp"
+        note:
+          type: string
+
+    WorkingHours:
+      type: object
+      properties:
+        booking:
+          type: object
+          properties:
+            mon:
+              type: array
+              items:
+                type: object
+                properties:
+                  from:
+                    type: string
+                  to:
+                    type: string
+        delivery:
+          type: object
+          properties:
+            mon:
+              type: array
+              items:
+                type: object
+                properties:
+                  from:
+                    type: string
+                  to:
+                    type: string
+        takeout:
+          type: object
+          properties:
+            mon:
+              type: array
+              items:
+                type: object
+                properties:
+                  from:
+                    type: string
+                  to:
+                    type: string
+
+    RestaurantAddress:
+      type: object
+      properties:
+        fullAddress:
+          type: string
+        city:
+          type: string
+        location:
+          $ref: "#/components/schemas/Location"
+
+    Location:
+      type: object
+      properties:
+        latitude:
+          type: number
+        longitude:
+          type: number
+
+    RestaurantFilter:
+      type: object
+      properties:
+        id:
+          type: string
+        priority:
+          type: number
+
+    Timestamp:
+      type: object
+      properties:
+        seconds:
+          type: number
+        nanoseconds:
+          type: number
+
+    LocaleStrings:
+      type: object
+      properties:
+        en:
+          type: string
+        mk:
+          type: string
+
+    Cart:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string # OrderType
+        invitees:
+          type: object
+          properties:
+            customerId: # dynamic
+              type: object
+              properties:
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                imageUrl:
+                  type: string
+        tableId:
+          type: string
+        host:
+          $ref: "#/components/schemas/OrderCustomer"
+        restaurant:
+          type: object
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+            address:
+              $ref: "#/components/schemas/RestaurantAddress"
+        groupedItems:
+          $ref: "#/components/schemas/GroupedCartItems"
+        itemsTotalPrice:
+          type: number
+        deliveryFee:
+          type: number
+        priorityFee:
+          type: number
+        isPriority:
+          type: boolean
+        coupon:
+          type: string
+        tip:
+          type: number
+        roundup:
+          type: number
+        takeoutDiscount:
+          type: number
+        wallet:
+          type: number
+        isEmpty:
+          type: boolean
+        count:
+          type: number
+        driverComment:
+          type: string
+        isPreorder:
+          type: boolean
+        deliveryDate:
+          $ref: "#/components/schemas/Timestamp"
+        restaurantIds:
+          type: array
+          items:
+            type: string
+
+    GroupedCartItems:
+      type: object
+      properties:
+        id: # dynamic
+          $ref: "#/components/schemas/GroupedCartItem"
+
+    GroupedCartItem:
+      type: object
+      properties:
+        foodMenuId:
+          type: string
+        restaurantId:
+          type: string
+        restaurantName:
+          type: string
+        restaurantAddress:
+          $ref: "#/components/schemas/RestaurantAddress"
+        restaurantMinOrderAmount:
+          type: number
+        restaurantRoundup:
+          type: number
+        restaurantTotalItemsPrice:
+          type: number
+        restaurantLogoUrl:
+          type: string
+        restaurantPhones:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              phoneNumber:
+                type: string
+        items:
+          $ref: "#/components/schemas/CartItems"
+        deliveryPricePerKm:
+          type: number
+
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+        orderNo:
+          type: number
+        deliveryDate:
+          $ref: "#/components/schemas/Timestamp"
+        customer:
+          $ref: "#/components/schemas/OrderCustomer"
+        service:
+          type: string
+        type:
+          type: string
+        createdAt:
+          $ref: "#/components/schemas/Timestamp"
+        reviewed:
+          type: boolean
+        payment:
+          type: string
+        refund:
+          type: boolean
+        foodMenuId:
+          type: string
+        platform:
+          type: string
+        tip:
+          type: number
+        wallet:
+          type: object
+          properties:
+            amount:
+              type: number
+        deliveryFee:
+          type: number
+        pickupTime:
+          $ref: "#/components/schemas/Timestamp"
+        deliveryTime:
+          type: object
+          properties:
+            minimumDeliveryTime:
+              $ref: "#/components/schemas/Timestamp"
+            maximumDeliveryTime:
+              $ref: "#/components/schemas/Timestamp"
+        priorityFee:
+          type: number
+        coupon:
+          type: string
+        roundup:
+          type: number
+        takeoutDiscount:
+          type: number
+        itemsTotalPrice:
+          type: number
+        total:
+          type: number
+        isPriority:
+          type: boolean
+        status:
+          type: string
+        items:
+          $ref: "#/components/schemas/CartItems"
+        driverComment:
+          type: string
+        driver:
+          $ref: "#/components/schemas/Driver"
+        focused:
+          type: boolean
+        statusChangeLog:
+          type: object
+          properties:
+            dispatchedAt:
+              $ref: "#/components/schemas/Timestamp"
+            confirmedAt:
+              $ref: "#/components/schemas/Timestamp"
+            preparedAt:
+              $ref: "#/components/schemas/Timestamp"
+            pickedAt:
+              $ref: "#/components/schemas/Timestamp"
+            deliveredAt:
+              $ref: "#/components/schemas/Timestamp"
+        invoice:
+          type: object
+          properties:
+            turnover:
+              type: number
+            vat:
+              type: number
+            rabat:
+              type: number
+            baseVat5:
+              type: number
+            baseVat18:
+              type: number
+            vat5:
+              type: number
+            vat18:
+              type: number
+            toPay:
+              type: number
+        restaurant:
+          type: object
+          properties:
+            id:
+              type: string
+            name:
+              $ref: "#/components/schemas/LocaleStrings"
+            address:
+              $ref: "#/components/schemas/RestaurantAddress"
+            images:
+              type: object
+              properties:
+                logoUrl:
+                  type: string
+            phones:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  phoneNumber:
+                    type: string
+            deliveryPricePerKm:
+              type: number
+            minOrderAmount:
+              type: number
+        dispatchedBy:
+          type: string
+        confirmedBy:
+          type: string
+        orderComment:
+          type: string
+        leftToPay:
+          type: number
+        returnedWallet:
+          type: number
+
+    CartItems:
+      type: object
+      properties:
+        cartItemId:
+          $ref: "#/components/schemas/CartItem"
+
+    CartItem:
+      type: object
+      properties:
+        id:
+          type: string
+        itemNo:
+          type: string
+        name:
+          $ref: "#/components/schemas/LocaleStrings"
+        customerId:
+          type: string
+        basePrice:
+          type: number
+        finalPrice:
+          type: number
+        discountedPrice:
+          type: number
+        comment:
+          type: string
+        onlyOnline:
+          type: string
+        quantity:
+          type: number
+        imageUrl:
+          type: string
+        portions:
+          $ref: "#/components/schemas/Portions"
+        selectedPortionId:
+          type: string
+        ingredients:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                $ref: "#/components/schemas/LocaleStrings"
+        excluded:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                $ref: "#/components/schemas/LocaleStrings"
+        rabat:
+          $ref: "#/components/schemas/PriceType"
+        markup:
+          $ref: "#/components/schemas/PriceType"
+        round:
+          $ref: "#/components/schemas/PriceType"
+        discount:
+          type: object
+          properties:
+            orderType: # "delivery" | "takeout" | "inhouse" | "internal"
+              type: object
+              properties:
+                type:
+                  type: string # "percentage" | "fixed"
+                value:
+                  type: number
+        vat:
+          type: number
+
+    PriceType:
+      type: object
+      properties:
+        orderType:
+          type: number
+
+    Portions:
+      type: object
+      properties:
+        portionId:
+          $ref: "#/components/schemas/Portion"
+
+    Portion:
+      type: object
+      properties:
+        name:
+          $ref: "#/components/schemas/LocaleStrings"
+        basePrice:
+          type: number
+        finalPrice:
+          type: number
+        discountedPrice:
+          type: number
+
+    OrderCustomer:
+      type: object
+      properties:
+        id:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        alergies:
+          type: array
+          items:
+            type: string
+        email:
+          type: string
+        phone:
+          $ref: "#/components/schemas/Phone"
+        internalComment:
+          type: string
+        address:
+          $ref: "#/components/schemas/CustomerAddress"
+        favorites:
+          type: array
+          items:
+            type: string
+        ordersCount:
+          type: number
+        cartId:
+          type: string
+        wallet:
+          type: object
+          properties:
+            amount:
+              type: number
+        isDeleted:
+          type: boolean
+        deletedAt:
+          $ref: "#/components/schemas/Timestamp"
+
+    Customer:
+      type: object
+      properties:
+        id:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        alergies:
+          type: array
+          items:
+            type: string
+        email:
+          type: string
+        phone:
+          $ref: "#/components/schemas/Phone"
+        internalComment:
+          type: string
+        addresses:
+          type: object
+          properties:
+            someDynamicId:
+              $ref: "#/components/schemas/CustomerAddress"
+        favorites:
+          type: array
+          items:
+            type: string
+        ordersCount:
+          type: number
+        cartId:
+          type: string
+        wallet:
+          type: object
+          properties:
+            amount:
+              type: number
+        isDeleted:
+          type: boolean
+        deletedAt:
+          $ref: "#/components/schemas/Timestamp"
+
+    CustomerAddress:
+      type: object
+      properties:
+        id:
+          type: string
+        fullAddress:
+          type: string
+        city:
+          type: string
+        streetNumber:
+          type: string
+        approved:
+          type: boolean
+        accomodation:
+          type: string
+        entranceNumber:
+          type: string
+        doorPin:
+          type: string
+        floor:
+          type: string
+        location:
+          $ref: "#/components/schemas/Location"
+        title:
+          type: string
+        apartmentNumber:
+          type: string
+        isDefault:
+          type: boolean
+        createdAt:
+          $ref: "#/components/schemas/Timestamp"
+
+    Phone:
+      type: object
+      properties:
+        countryCode:
+          type: string
+        fullNumber:
+          type: string
+        phoneNumber:
+          type: string

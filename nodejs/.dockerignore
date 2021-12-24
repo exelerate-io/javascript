@@ -1,0 +1,7 @@
+node_modules
+*.md
+!README*.md
+coverage
+jest.config.js
+tests
+bin
